@@ -2,806 +2,1466 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>口语狂练 - AI 英语口语输出与复习助手</title>
-    <!-- Tailwind CSS CDN -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>口语狂练</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        :root {
+            --apple-bg: #F5F5F7;
+            --apple-card: rgba(255, 255, 255, 0.88);
+            --apple-primary: #5856D6;
+            --apple-primary-dark: #4240B8;
+        }
+        * {
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background-color: var(--apple-bg);
+            background-image: 
+                radial-gradient(at 10% 0%, rgba(88, 86, 214, 0.07) 0px, transparent 50%),
+                radial-gradient(at 90% 20%, rgba(0, 122, 255, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: #1D1D1F;
+        }
+        .apple-glass {
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: saturate(180%) blur(24px);
+            -webkit-backdrop-filter: saturate(180%) blur(24px);
+        }
+        .apple-card {
+            background: var(--apple-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.04), 0 1px 4px -1px rgba(0, 0, 0, 0.02);
+            border-radius: 22px;
+        }
+        .apple-input {
+            background: rgba(118, 118, 128, 0.06);
+            border: 1.5px solid transparent;
+            border-radius: 14px;
+            transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .apple-input:focus {
+            background: #FFFFFF;
+            border-color: rgba(88, 86, 214, 0.45);
+            box-shadow: 0 0 0 4px rgba(88, 86, 214, 0.12);
+        }
+        .apple-btn {
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .apple-btn:active {
+            transform: scale(0.97);
+        }
+        .segmented-bg {
+            background: rgba(118, 118, 128, 0.12);
+            border-radius: 12px;
+            padding: 3px;
+        }
+        .segmented-item {
+            border-radius: 9px;
+            transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .segmented-item.active {
+            background: #FFFFFF;
+            color: #1D1D1F;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+            font-weight: 600;
+        }
+        .tab-view {
+            display: none;
+            animation: fadeIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .tab-view.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* 隐藏滚动条但保留滚动 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col pb-20">
+<body class="min-h-screen flex flex-col pb-24 antialiased selection:bg-indigo-500 selection:text-white">
 
-    <!-- 顶部导航栏 -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 py-3 flex items-center justify-between">
-        <div class="flex items-center space-x-2 cursor-pointer" id="logo-trigger" title="连击5次或按 Ctrl+Shift+A 打开站长后台">
-            <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">口</div>
-            <span class="font-bold text-lg text-slate-900">口语狂练</span>
-        </div>
-        <div class="flex items-center space-x-3">
-            <select id="tts-voice-select" class="text-xs bg-slate-100 border border-slate-200 rounded px-2 py-1 outline-none">
-                <option value="en-US">🇺🇸 美音</option>
-                <option value="en-GB">🇬🇧 英音</option>
-            </select>
-            <span id="header-user-badge" class="text-xs bg-purple-50 text-purple-700 px-2.5 py-1 rounded-full font-medium cursor-pointer" onclick="switchTab('mine')">未登录</span>
+    <!-- 顶部 Apple 风格毛玻璃导航栏 -->
+    <header class="apple-glass sticky top-0 z-30 border-b border-black/[0.05] px-5 py-3.5">
+        <div class="max-w-md mx-auto flex items-center justify-between">
+            <div id="admin-trigger" class="flex items-center space-x-2.5 cursor-pointer select-none" title="连击5次打开站长后台">
+                <div class="w-8 h-8 rounded-[10px] bg-gradient-to-tr from-[#5856D6] to-[#7A78FF] flex items-center justify-center text-white shadow-sm shadow-indigo-500/20">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                    </svg>
+                </div>
+                <span class="font-semibold text-[16px] tracking-tight text-[#1D1D1F]">口语狂练</span>
+            </div>
+
+            <div class="flex items-center space-x-2.5">
+                <button onclick="toggleAccent()" id="accent-btn" class="apple-btn text-[12px] font-medium bg-black/[0.04] hover:bg-black/[0.07] text-[#1D1D1F] px-2.5 py-1 rounded-full flex items-center space-x-1">
+                    <span id="accent-label">🇺🇸 美式发音</span>
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- 主体内容区域 -->
-    <main class="flex-1 max-w-md w-full mx-auto p-4">
+    <!-- 主体内容容器 -->
+    <main class="flex-1 max-w-md w-full mx-auto px-4 pt-5 space-y-5">
 
-        <!-- ================= 1. 首页 (AI 输出教练) ================= -->
-        <div id="tab-home" class="tab-content active space-y-4">
-            <div class="text-center py-2">
-                <h1 class="text-xl font-bold text-slate-900">AI 输出教练</h1>
-                <p class="text-xs text-slate-500 mt-1">三步：自由造句 → AI 润色 → 存入复习</p>
+        <!-- ================= 1. 首页：AI 输出教练 ================= -->
+        <section id="view-home" class="tab-view active space-y-5">
+            <div class="text-center space-y-1 pt-1">
+                <h1 class="text-[24px] font-bold tracking-tight text-[#1D1D1F]">AI 输出教练</h1>
+                <p class="text-[13px] text-[#86868B]">三步：自由造句 → AI 润色 → 存入复习</p>
             </div>
 
-            <!-- 模式切换卡片 -->
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
-                <div class="flex bg-slate-100 p-1 rounded-xl">
-                    <button onclick="setHomeMode('ai')" id="btn-mode-ai" class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-white shadow-sm text-purple-600 transition">✨ AI 制卡</button>
-                    <button onclick="setHomeMode('manual')" id="btn-mode-manual" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-500 transition">🏷️ 手动制卡</button>
+            <div class="apple-card p-5 space-y-5">
+                <!-- Apple 分段控制器：AI 制卡 / 手动制卡 -->
+                <div class="segmented-bg flex">
+                    <button onclick="switchHomeMode('ai')" id="seg-ai" class="segmented-item active flex-1 py-1.5 text-[13px] text-[#86868B] flex items-center justify-center space-x-1.5">
+                        <svg class="w-3.5 h-3.5 text-[#5856D6]" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <span>AI 制卡</span>
+                    </button>
+                    <button onclick="switchHomeMode('manual')" id="seg-manual" class="segmented-item flex-1 py-1.5 text-[13px] text-[#86868B] flex items-center justify-center space-x-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                        <span>手动制卡</span>
+                    </button>
                 </div>
 
                 <!-- 中文输入区 -->
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="text-xs font-semibold text-slate-700">🇨🇳 我想表达的中文</label>
-                        <button onclick="randomPractice()" class="text-xs text-purple-600 hover:text-purple-700 font-medium">🎲 随机练一句</button>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[13px] font-semibold text-[#1D1D1F] flex items-center space-x-1.5">
+                            <span>🇨🇳</span><span>我想表达的中文</span>
+                        </label>
+                        <button onclick="openRandomScene()" id="btn-random-entry" class="apple-btn text-[12px] font-medium text-[#5856D6] bg-[#5856D6]/10 hover:bg-[#5856D6]/15 px-3 py-1 rounded-full flex items-center space-x-1">
+                            <span>🎲 随机练一句</span>
+                        </button>
                     </div>
-                    <textarea id="home-cn-input" rows="3" class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-purple-500 transition resize-none" placeholder="例如：我刚起床，脑子还没完全清醒。"></textarea>
+                    <textarea id="home-cn" rows="3" class="apple-input w-full p-3.5 text-[15px] text-[#1D1D1F] placeholder-[#86868B]/70 outline-none resize-none" placeholder="例如：我相信我能掌握英语"></textarea>
                 </div>
 
-                <!-- 场景标签 -->
-                <div id="scene-tag-box" class="hidden flex items-center space-x-2 text-xs text-slate-500 bg-purple-50/50 p-2 rounded-lg border border-purple-100">
-                    <span class="font-medium text-purple-700" id="scene-title-text">场景：早晨和朋友聊天</span>
-                    <span class="bg-purple-600 text-white px-1.5 py-0.5 rounded text-[10px]">简单</span>
+                <!-- 场景抽题控制面板（对应图3，点击随机练一句后展开） -->
+                <div id="scene-panel" class="hidden bg-[#F5F5F7]/90 border border-black/[0.04] rounded-2xl p-3.5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="text-[13px] font-medium text-[#1D1D1F]">
+                            <span class="text-[#5856D6] font-semibold">场景：</span><span id="scene-desc">早晨和朋友聊天</span>
+                        </div>
+                        <button onclick="closeRandomScene()" class="text-[11px] text-[#86868B] hover:text-[#1D1D1F]">退出场景</button>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span id="scene-tag" class="text-[11px] bg-white border border-black/[0.06] text-[#1D1D1F] px-2.5 py-0.5 rounded-full font-medium">描述状态</span>
+                        <span id="scene-level" class="text-[11px] bg-emerald-500/10 text-emerald-700 px-2.5 py-0.5 rounded-full font-medium">简单</span>
+                    </div>
+                    <div class="flex items-center space-x-2 pt-0.5">
+                        <select id="scene-category" onchange="pickNextSceneSentence()" class="flex-1 bg-white border border-black/[0.08] rounded-xl px-3 py-2 text-[13px] text-[#1D1D1F] outline-none">
+                            <option value="daily">日常生活</option>
+                            <option value="work">职场沟通</option>
+                            <option value="social">社交破冰</option>
+                            <option value="emotion">情绪表达</option>
+                        </select>
+                        <button onclick="pickNextSceneSentence()" class="apple-btn bg-white border border-black/[0.08] hover:bg-black/[0.02] text-[#1D1D1F] px-3.5 py-2 rounded-xl text-[13px] font-medium flex items-center space-x-1 shadow-2xs">
+                            <svg class="w-3.5 h-3.5 text-[#5856D6]" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            <span>换一句</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- 英文尝试输入区 -->
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="text-xs font-semibold text-slate-700">🇺🇸 我尝试写的英文</label>
-                        <button onclick="startVoiceInput('home-en-input')" class="text-xs text-purple-600 hover:underline flex items-center space-x-1"><span>🎤 语音输入</span></button>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[13px] font-semibold text-[#1D1D1F] flex items-center space-x-1.5">
+                            <span>🇺🇸</span><span id="home-en-label">我尝试写的英文</span>
+                        </label>
+                        <button onclick="startSpeechToText('home-en')" class="apple-btn text-[12px] font-medium text-[#5856D6] hover:opacity-80 flex items-center space-x-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z"/></svg>
+                            <span>语音输入</span>
+                        </button>
                     </div>
-                    <textarea id="home-en-input" rows="3" class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-purple-500 transition resize-none" placeholder="试着用英文说出上面这句中文，写错也没关系..."></textarea>
+                    <textarea id="home-en" rows="3" class="apple-input w-full p-3.5 text-[15px] text-[#1D1D1F] placeholder-[#86868B]/70 outline-none resize-none" placeholder="例如：I believe I can master English"></textarea>
                 </div>
 
-                <p class="text-[11px] text-amber-600 bg-amber-50 p-2 rounded-lg">💡 先试着用英文写出上面这句话，写错也没关系，AI 会帮你改 ✍️</p>
+                <p id="home-hint-text" class="text-[12px] text-[#D97706] font-medium">
+                    先试着用英文写出上面这句话，写错也没关系，AI 会帮你改 ✍️
+                </p>
 
-                <button onclick="handleAIPolish()" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl text-sm shadow-md shadow-purple-200 transition flex items-center justify-center space-x-2">
-                    <span>✨ AI 润色 (AI Polish)</span>
+                <!-- 主操作按钮 -->
+                <button onclick="submitHomeAction()" id="home-main-btn" class="apple-btn w-full py-3.5 bg-[#1D1D1F] hover:bg-black text-white font-semibold rounded-2xl text-[15px] shadow-lg shadow-black/10 flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4 text-[#A78BFA]" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <span id="home-main-btn-text">AI 润色 (AI Polish)</span>
                 </button>
             </div>
 
-            <!-- AI 润色结果展示面板 -->
-            <div id="polish-result-card" class="hidden bg-white rounded-2xl p-4 shadow-sm border border-purple-200 space-y-3">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                    <span class="text-xs font-bold text-purple-700 flex items-center space-x-1"><span>🤖 AI 智能批改结果</span></span>
-                    <button onclick="speakText(currentPolishResult.bestEnglish)" class="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded hover:bg-purple-100">🔊 朗读地道表达</button>
+            <!-- AI 润色结果卡片（生成后出现，确认后存入复习） -->
+            <div id="home-polish-card" class="hidden apple-card p-5 space-y-4 border border-[#5856D6]/20">
+                <div class="flex items-center justify-between border-b border-black/[0.05] pb-3">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-[#5856D6]"></span>
+                        <span class="text-[14px] font-semibold text-[#1D1D1F]">AI 教练润色报告</span>
+                    </div>
+                    <button onclick="speakCurrentPolished()" class="apple-btn text-[12px] font-medium text-[#5856D6] bg-[#5856D6]/10 px-3 py-1 rounded-full flex items-center space-x-1">
+                        <span>🔊 朗读跟读</span>
+                    </button>
                 </div>
-                <div id="polish-content-body" class="text-xs space-y-2 text-slate-700"></div>
-                <button onclick="saveCardFromPolish()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs shadow-sm transition">
-                    📥 存入复习卡片
+
+                <div id="home-polish-body" class="space-y-3 text-[14px] leading-relaxed text-[#1D1D1F]"></div>
+
+                <button onclick="savePolishedCardToReview()" class="apple-btn w-full py-3 bg-[#5856D6] hover:bg-[#4240B8] text-white font-semibold rounded-xl text-[14px] shadow-md shadow-indigo-500/20 flex items-center justify-center space-x-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    <span>存入复习卡片库</span>
                 </button>
             </div>
-        </div>
+        </section>
 
-        <!-- ================= 2. 复习模块 ================= -->
-        <div id="tab-review" class="tab-content space-y-4">
-            <div class="text-center py-2">
-                <h1 class="text-xl font-bold text-slate-900">口语复习回想</h1>
-                <p id="review-round-indicator" class="text-xs text-slate-500 mt-1">当前暂无待复习卡片</p>
-            </div>
-
-            <div id="review-card-container">
-                <!-- 动态渲染复习卡片 -->
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 text-center py-12 text-slate-400 text-sm">
-                    📭 还没有收集卡片，快去【首页】造句并存入复习卡片吧！
+        <!-- ================= 2. 复习：卡片回想与 AI 教练 ================= -->
+        <section id="view-review" class="tab-view space-y-5">
+            <!-- 顶部进度条（对应图1） -->
+            <div class="space-y-2 pt-1">
+                <div class="w-full bg-black/[0.06] h-1.5 rounded-full overflow-hidden">
+                    <div id="review-progress-bar" class="bg-[#5856D6] h-full w-0 transition-all duration-300"></div>
                 </div>
-            </div>
-
-            <!-- 问问 AI 教练模块 -->
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
-                <div class="text-xs font-bold text-purple-700 flex items-center space-x-1">
-                    <span>💬 问问 AI 教练</span>
-                </div>
-                <div id="coach-chat-box" class="max-h-48 overflow-y-auto space-y-2 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <div class="text-slate-400 text-center py-2">输入你的语法或表达疑问，AI 教练随时为你解答。</div>
-                </div>
-                <div class="flex space-x-2">
-                    <input type="text" id="coach-question-input" class="flex-1 p-2 text-xs bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-purple-500" placeholder="例如：这里为什么不用 get up？">
-                    <button onclick="askAICoach()" class="px-4 py-2 bg-purple-600 text-white rounded-xl text-xs font-semibold hover:bg-purple-700 transition">发送</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= 3. 数据模块 ================= -->
-        <div id="tab-data" class="tab-content space-y-4">
-            <div class="text-center py-2">
-                <h1 class="text-xl font-bold text-slate-900">学习数据</h1>
-                <p class="text-xs text-slate-500 mt-1">坚持每天积累，进步看得见</p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <div class="text-xs text-slate-500">⏱️ 今日专注</div>
-                    <div class="text-2xl font-bold text-slate-900 mt-1"><span id="stat-focus-min">0</span> 分钟</div>
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <div class="text-xs text-slate-500">🔥 连续打卡</div>
-                    <div class="text-2xl font-bold text-slate-900 mt-1"><span id="stat-streak-days">0</span> 天</div>
+                <div id="review-round-text" class="text-center text-[13px] font-medium text-[#86868B]">
+                    Round 1: 0 / 0
                 </div>
             </div>
 
-            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-4 text-white flex items-center justify-between shadow-md">
-                <div>
-                    <div class="text-xs opacity-80">累计收集卡片</div>
-                    <div class="text-2xl font-bold mt-1"><span id="stat-total-cards">0</span> 张卡片</div>
+            <!-- 复习主卡片容器 -->
+            <div id="review-card-wrapper"></div>
+
+            <!-- 问问 AI 教练互动区（对应图2） -->
+            <div id="review-coach-section" class="apple-card p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-6 h-6 rounded-full bg-[#5856D6]/10 text-[#5856D6] flex items-center justify-center text-[12px] font-bold">?</div>
+                        <span class="text-[15px] font-semibold text-[#1D1D1F]">问问 AI 教练</span>
+                    </div>
+                    <button onclick="clearCoachChat()" class="text-[12px] text-[#86868B] hover:text-[#1D1D1F]">清空对话</button>
                 </div>
-                <button onclick="openCardManager()" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition font-medium">查看全部 &gt;</button>
+
+                <!-- 聊天气泡流 -->
+                <div id="coach-messages" class="space-y-3 max-h-80 overflow-y-auto no-scrollbar py-1">
+                    <div class="text-[13px] text-[#86868B] text-center py-4">
+                        点击上方「AI 润色」批改你的翻译，或在下方直接向教练提问语法与地道表达。
+                    </div>
+                </div>
+
+                <!-- 提问输入框 -->
+                <div class="flex items-center space-x-2 pt-1">
+                    <input type="text" id="coach-input" onkeydown="if(event.key==='Enter')sendCoachQuestion()" class="apple-input flex-1 px-3.5 py-2.5 text-[14px] outline-none" placeholder="例如：这样写哪里有问题？有没有更随口的说法？">
+                    <button onclick="sendCoachQuestion()" id="coach-send-btn" class="apple-btn bg-[#5856D6] hover:bg-[#4240B8] text-white px-4 py-2.5 rounded-xl text-[13px] font-semibold shrink-0 shadow-sm">
+                        提问
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 3. 数据：学习数据看板 ================= -->
+        <section id="view-data" class="tab-view space-y-4">
+            <div class="space-y-0.5 pt-1">
+                <h1 class="text-[24px] font-bold tracking-tight text-[#1D1D1F]">学习数据</h1>
+                <p class="text-[13px] text-[#86868B]">坚持每天积累，进步看得见</p>
             </div>
 
-            <div class="grid grid-cols-3 gap-3 text-center">
-                <div class="bg-white p-3 rounded-xl border border-slate-100">
-                    <div class="text-lg font-bold text-purple-600" id="stat-today-new">0</div>
-                    <div class="text-[10px] text-slate-500 mt-0.5">今日新增</div>
+            <!-- 第一排：今日专注 & 连续打卡 -->
+            <div class="grid grid-cols-2 gap-3.5">
+                <div class="apple-card p-4 space-y-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <span class="text-[13px] font-medium text-[#86868B]">今日专注</span>
+                    </div>
+                    <div class="text-[24px] font-bold text-[#1D1D1F] tracking-tight"><span id="stat-focus">0</span> 分钟</div>
                 </div>
-                <div class="bg-white p-3 rounded-xl border border-slate-100">
-                    <div class="text-lg font-bold text-purple-600" id="stat-today-review">0</div>
-                    <div class="text-[10px] text-slate-500 mt-0.5">今日复习</div>
-                </div>
-                <div class="bg-white p-3 rounded-xl border border-slate-100">
-                    <div class="text-lg font-bold text-purple-600" id="stat-total-review">0</div>
-                    <div class="text-[10px] text-slate-500 mt-0.5">累计复习</div>
+
+                <div onclick="scrollToCalendar()" class="apple-card p-4 space-y-3 cursor-pointer">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/></svg>
+                            </div>
+                            <span class="text-[13px] font-medium text-[#86868B]">连续打卡</span>
+                        </div>
+                        <span class="text-[#86868B] text-xs">&gt;</span>
+                    </div>
+                    <div class="text-[24px] font-bold text-[#1D1D1F] tracking-tight"><span id="stat-streak">0</span> 天</div>
                 </div>
             </div>
 
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-2">
-                <div class="text-xs font-bold text-slate-800 flex items-center justify-between">
-                    <span>📅 学习时长与打卡日历</span>
-                    <span class="text-[10px] text-slate-400">每日复习/新建自动打卡</span>
-                </div>
-                <div id="calendar-grid" class="grid grid-cols-7 gap-1 pt-2 text-center text-xs"></div>
-            </div>
-        </div>
-
-        <!-- ================= 4. 我的模块 ================= -->
-        <div id="tab-mine" class="tab-content space-y-4">
-            <div class="text-center py-2">
-                <h1 class="text-xl font-bold text-slate-900">个人中心</h1>
-            </div>
-
-            <!-- 用户信息卡片 -->
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center font-bold text-lg" id="user-avatar-initial">G</div>
+            <!-- 累计收集紫色渐变横幅 -->
+            <div onclick="openAllCardsModal()" class="apple-btn cursor-pointer rounded-[22px] p-5 bg-gradient-to-r from-[#6E56CF] via-[#5856D6] to-[#4F46E5] text-white shadow-lg shadow-indigo-500/20 flex items-center justify-between">
+                <div class="flex items-center space-x-3.5">
+                    <div class="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+                    </div>
                     <div>
-                        <div class="font-bold text-sm text-slate-900" id="user-name-display">未登录用户</div>
-                        <div class="text-[11px] text-slate-400" id="user-email-display">点击下方登录/注册账号</div>
+                        <div class="text-[12px] text-white/80 font-medium">累计收集</div>
+                        <div class="text-[24px] font-bold tracking-tight leading-tight"><span id="stat-cards-total">0</span> <span class="text-[14px] font-normal">张卡片</span></div>
                     </div>
                 </div>
-                <button onclick="openLoginModal()" class="text-xs bg-purple-50 text-purple-600 px-3 py-1.5 rounded-lg font-medium hover:bg-purple-100">登录/注册</button>
-            </div>
-
-            <!-- 学习排行榜卡片 -->
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
-                <div class="flex justify-between items-center">
-                    <span class="text-xs font-bold text-slate-800">🏆 学习排行榜</span>
-                    <span class="text-[11px] text-purple-600 cursor-pointer font-medium" onclick="toggleLeaderboardJoin()" id="join-leaderboard-btn">加入排行榜</span>
-                </div>
-                <div id="leaderboard-list" class="space-y-2 text-xs">
-                    <!-- 动态排行列表 -->
+                <div class="text-[13px] font-medium text-white/90 flex items-center space-x-1">
+                    <span>查看全部</span><span>&gt;</span>
                 </div>
             </div>
 
-            <!-- AI 额度礼包 -->
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-2">
-                <div class="flex justify-between items-center text-xs">
-                    <span class="font-bold text-slate-800">✨ 注册礼包 (AI 额度)</span>
-                    <span class="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded font-medium">使用中</span>
+            <!-- 第三排三列统计 -->
+            <div class="grid grid-cols-3 gap-3">
+                <div class="apple-card p-4 space-y-2">
+                    <div class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center text-xs font-bold">↗</div>
+                    <div class="text-[22px] font-bold text-[#1D1D1F]" id="stat-today-new">0</div>
+                    <div class="text-[12px] text-[#86868B]">今日新增</div>
                 </div>
-                <div class="flex justify-between text-xs text-slate-500">
-                    <span>剩余 AI 额度</span>
-                    <span class="font-bold text-slate-800"><span id="ai-quota-num">100</span> / 100</span>
+                <div class="apple-card p-4 space-y-2">
+                    <div class="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center text-xs font-bold">🕒</div>
+                    <div class="text-[22px] font-bold text-[#1D1D1F]" id="stat-today-rev">0</div>
+                    <div class="text-[12px] text-[#86868B]">今日复习</div>
                 </div>
-                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                    <div id="ai-quota-bar" class="bg-purple-600 h-full w-full transition-all"></div>
-                </div>
-                <div class="flex justify-between items-center pt-1">
-                    <span class="text-[10px] text-slate-400">永久有效</span>
-                    <button onclick="redeemCode()" class="text-xs text-purple-600 font-medium hover:underline">🔑 兑换码</button>
+                <div class="apple-card p-4 space-y-2">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-xs font-bold">↻</div>
+                    <div class="text-[22px] font-bold text-[#1D1D1F]" id="stat-total-rev">0</div>
+                    <div class="text-[12px] text-[#86868B]">累计复习</div>
                 </div>
             </div>
 
-            <button onclick="logout()" class="w-full py-3 bg-white border border-rose-200 text-rose-600 font-semibold rounded-xl text-xs hover:bg-rose-50 transition">
+            <!-- 学习时长与打卡日历 -->
+            <div id="calendar-card" class="apple-card p-4 space-y-3">
+                <div class="flex items-start space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-black/[0.04] text-[#1D1D1F] flex items-center justify-center shrink-0 mt-0.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-[14px] font-semibold text-[#1D1D1F]">学习时长与打卡日历</div>
+                        <div class="text-[12px] text-[#86868B] mt-0.5 leading-relaxed">每天复习 5 次、用一次 AI 润色或追问，或新建一张卡片即可自动打卡</div>
+                    </div>
+                </div>
+                <div id="calendar-days" class="grid grid-cols-7 gap-1.5 pt-2 text-center text-[12px]"></div>
+            </div>
+        </section>
+
+        <!-- ================= 4. 我的：个人中心与真实排行 ================= -->
+        <section id="view-mine" class="tab-view space-y-4">
+            <div class="pt-1">
+                <h1 class="text-[24px] font-bold tracking-tight text-[#1D1D1F]">我的</h1>
+            </div>
+
+            <!-- 个人信息卡片 -->
+            <div class="apple-card p-4 flex items-center justify-between">
+                <div class="flex items-center space-x-3.5">
+                    <div id="mine-avatar" class="w-12 h-12 rounded-full bg-[#5856D6]/12 text-[#5856D6] flex items-center justify-center font-semibold text-[17px]">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span id="mine-name" class="font-bold text-[16px] text-[#1D1D1F]">未注册学员</span>
+                            <button onclick="openProfileModal()" class="text-[12px] text-[#5856D6] font-medium hover:underline">✏️ 修改 / 注册</button>
+                        </div>
+                        <div id="mine-email" class="text-[12px] text-[#86868B] mt-0.5">点击上方注册即可保存学习档案 · 仅自己可见</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学习排行榜（100% 真实数据，无任何伪造假人） -->
+            <div class="apple-card p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-amber-500">🏆</span>
+                        <span class="font-bold text-[15px] text-[#1D1D1F]">学习排行榜</span>
+                    </div>
+                    <span id="lb-sync-badge" class="text-[11px] text-[#86868B]">真实自愿上榜</span>
+                </div>
+
+                <!-- 维度切换 -->
+                <div class="segmented-bg inline-flex">
+                    <button onclick="switchLbTab('review')" id="lb-tab-review" class="segmented-item active px-3.5 py-1 text-[12px] text-[#86868B]">本周复习</button>
+                    <button onclick="switchLbTab('streak')" id="lb-tab-streak" class="segmented-item px-3.5 py-1 text-[12px] text-[#86868B]">连续打卡</button>
+                </div>
+
+                <!-- 自愿加入提示框（对应图4） -->
+                <div id="lb-invite-box" class="bg-amber-50/80 border border-amber-200/60 rounded-2xl p-4 space-y-2.5">
+                    <div class="text-[13px] font-bold text-[#1D1D1F]">加入学习排行榜，和大家一起坚持</div>
+                    <div class="text-[12px] text-[#86868B] leading-relaxed">只显示昵称和真实学习成绩，邮箱不会公开，随时可以退出。</div>
+                    <div class="flex items-center space-x-3 pt-1">
+                        <button onclick="joinLeaderboard()" class="apple-btn bg-[#5856D6] text-white text-[12px] font-semibold px-4 py-2 rounded-xl shadow-xs">加入排行榜</button>
+                    </div>
+                </div>
+
+                <!-- 真实排行榜列表 -->
+                <div id="lb-list" class="divide-y divide-black/[0.05] text-[13px]"></div>
+
+                <!-- 底部个人状态栏 -->
+                <div class="bg-[#F5F5F7] rounded-xl p-3 flex items-center justify-between text-[12px] text-[#86868B]">
+                    <span id="lb-footer-status">你累计复习了 0 次。</span>
+                    <button onclick="leaveLeaderboard()" id="lb-leave-btn" class="hidden text-rose-500 font-medium hover:underline">退出排行榜</button>
+                </div>
+            </div>
+
+            <!-- 注册礼包：100 满额度动态扣减 -->
+            <div class="apple-card p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="text-[#5856D6]">✨</span>
+                        <span class="font-bold text-[15px] text-[#1D1D1F]">注册礼包</span>
+                    </div>
+                    <span class="text-[11px] bg-emerald-500/10 text-emerald-700 px-2.5 py-0.5 rounded-full font-medium">使用中</span>
+                </div>
+
+                <div class="flex items-center justify-between text-[13px]">
+                    <span class="text-[#86868B]">剩余 AI 额度</span>
+                    <span class="font-bold text-[#1D1D1F]"><span id="mine-quota">100</span> <span class="text-[#86868B] font-normal">/ 100</span></span>
+                </div>
+
+                <div class="w-full bg-black/[0.06] h-2 rounded-full overflow-hidden">
+                    <div id="mine-quota-bar" class="bg-[#5856D6] h-full transition-all duration-300" style="width: 100%"></div>
+                </div>
+
+                <div class="flex items-center justify-between pt-1 text-[12px]">
+                    <span class="text-[#86868B]">有效期至 2026年12月31日</span>
+                    <button onclick="promptRedeemCode()" class="text-[#5856D6] font-medium hover:underline">🔑 兑换码</button>
+                </div>
+            </div>
+
+            <button onclick="handleLogout()" class="apple-btn w-full py-3.5 apple-card text-rose-500 font-semibold text-[14px] hover:bg-rose-50/40">
                 退出登录
             </button>
-        </div>
+        </section>
 
     </main>
 
-    <!-- 底部固定 Tab 导航 -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 max-w-md mx-auto flex justify-around py-2 z-30">
-        <button onclick="switchTab('home')" id="tab-btn-home" class="flex flex-col items-center text-purple-600">
-            <span class="text-lg">🏠</span>
-            <span class="text-[10px] mt-0.5 font-medium">首页</span>
-        </button>
-        <button onclick="switchTab('review')" id="tab-btn-review" class="flex flex-col items-center text-slate-400">
-            <span class="text-lg">📖</span>
-            <span class="text-[10px] mt-0.5 font-medium">复习</span>
-        </button>
-        <button onclick="switchTab('data')" id="tab-btn-data" class="flex flex-col items-center text-slate-400">
-            <span class="text-lg">📊</span>
-            <span class="text-[10px] mt-0.5 font-medium">数据</span>
-        </button>
-        <button onclick="switchTab('mine')" id="tab-btn-mine" class="flex flex-col items-center text-slate-400">
-            <span class="text-lg">👤</span>
-            <span class="text-[10px] mt-0.5 font-medium">我的</span>
-        </button>
+    <!-- 底部 Apple iOS 悬浮毛玻璃导航栏 -->
+    <nav class="apple-glass fixed bottom-0 inset-x-0 border-t border-black/[0.06] z-30 pb-safe">
+        <div class="max-w-md mx-auto grid grid-cols-4 py-2">
+            <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center py-1 text-[#5856D6]">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+                <span class="text-[11px] font-medium mt-1">首页</span>
+            </button>
+            <button onclick="switchTab('review')" id="nav-review" class="flex flex-col items-center py-1 text-[#86868B]">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+                <span class="text-[11px] font-medium mt-1">复习</span>
+            </button>
+            <button onclick="switchTab('data')" id="nav-data" class="flex flex-col items-center py-1 text-[#86868B]">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+                <span class="text-[11px] font-medium mt-1">数据</span>
+            </button>
+            <button onclick="switchTab('mine')" id="nav-mine" class="flex flex-col items-center py-1 text-[#86868B]">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                <span class="text-[11px] font-medium mt-1">我的</span>
+            </button>
+        </div>
     </nav>
 
-    <!-- 站长专属后台隐藏弹窗 -->
-    <div id="admin-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-xl">
-            <div class="flex justify-between items-center font-bold text-sm text-slate-900 border-b pb-2">
-                <span>🛡️ 站长专属 API 配置后台</span>
-                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+    <!-- 弹窗 1：注册 / 修改个人资料 -->
+    <div id="modal-profile" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="apple-card bg-white p-6 max-w-sm w-full space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-[17px] text-[#1D1D1F]">个人档案设置</h3>
+                <button onclick="closeProfileModal()" class="text-[#86868B] hover:text-[#1D1D1F]">✕</button>
             </div>
-            <div class="space-y-3 text-xs">
+            <div class="space-y-3 text-[13px]">
                 <div>
-                    <label class="font-semibold text-slate-700">API 请求地址 (Base URL)</label>
-                    <input type="text" id="admin-api-url" class="w-full p-2.5 mt-1 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-purple-500" value="https://api.deepseek.com/v1">
+                    <label class="font-medium text-[#1D1D1F]">你的昵称</label>
+                    <input type="text" id="prof-name" class="apple-input w-full px-3.5 py-2.5 mt-1 outline-none" placeholder="输入昵称（排行榜显示）">
                 </div>
                 <div>
-                    <label class="font-semibold text-slate-700">API Key (密钥)</label>
-                    <input type="password" id="admin-api-key" class="w-full p-2.5 mt-1 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-purple-500" placeholder="sk-...">
-                </div>
-                <div>
-                    <label class="font-semibold text-slate-700">模型名称 (Model)</label>
-                    <input type="text" id="admin-api-model" class="w-full p-2.5 mt-1 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-purple-500" value="deepseek-chat">
+                    <label class="font-medium text-[#1D1D1F]">邮箱（仅自己可见）</label>
+                    <input type="email" id="prof-email" class="apple-input w-full px-3.5 py-2.5 mt-1 outline-none" placeholder="name@example.com">
                 </div>
             </div>
+            <button onclick="saveProfile()" class="apple-btn w-full py-3 bg-[#5856D6] text-white font-semibold rounded-xl text-[14px]">保存档案</button>
+        </div>
+    </div>
+
+    <!-- 弹窗 2：查看全部收集卡片 -->
+    <div id="modal-cards" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="apple-card bg-white p-5 max-w-md w-full max-h-[80vh] flex flex-col space-y-3">
+            <div class="flex justify-between items-center border-b border-black/[0.06] pb-3">
+                <h3 class="font-bold text-[16px] text-[#1D1D1F]">全部收集卡片</h3>
+                <button onclick="closeAllCardsModal()" class="text-[#86868B] hover:text-[#1D1D1F]">✕</button>
+            </div>
+            <div id="all-cards-list" class="flex-1 overflow-y-auto space-y-2.5 py-1"></div>
+        </div>
+    </div>
+
+    <!-- 弹窗 3：隐藏式站长专属后台（连击左上角 Logo 5次唤出） -->
+    <div id="modal-admin" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="apple-card bg-white p-6 max-w-md w-full space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-black/[0.06] pb-3">
+                <div>
+                    <h3 class="font-bold text-[16px] text-[#1D1D1F]">🛡️ 站长专属后台配置</h3>
+                    <p class="text-[11px] text-[#86868B]">对普通用户完全隐藏 · 支持免配免费AI或自定义API</p>
+                </div>
+                <button onclick="closeAdminModal()" class="text-[#86868B] hover:text-[#1D1D1F]">✕</button>
+            </div>
+
+            <div class="space-y-3 text-[12px]">
+                <div class="p-3 rounded-xl bg-indigo-50/80 text-indigo-900 leading-relaxed">
+                    💡 <strong>好消息：</strong>目前已默认启用<strong>内置免费云端 AI 通道</strong>，你不填任何 API Key 也能直接使用 AI 润色和教练问答！如果你有自己的 DeepSeek / 硅基流动 Key，也可在下方填入。
+                </div>
+
+                <div>
+                    <label class="font-semibold text-[#1D1D1F]">AI 接口地址 (Base URL，留空则用内置免费AI)</label>
+                    <input type="text" id="adm-url" class="apple-input w-full px-3 py-2 mt-1 outline-none" placeholder="例如 https://api.deepseek.com">
+                </div>
+                <div>
+                    <label class="font-semibold text-[#1D1D1F]">自定义 API Key (留空则使用内置免费 AI)</label>
+                    <input type="password" id="adm-key" class="apple-input w-full px-3 py-2 mt-1 outline-none" placeholder="sk-...">
+                </div>
+                <div>
+                    <label class="font-semibold text-[#1D1D1F]">模型名称 (Model)</label>
+                    <input type="text" id="adm-model" class="apple-input w-full px-3 py-2 mt-1 outline-none" placeholder="deepseek-chat">
+                </div>
+
+                <div class="border-t border-black/[0.06] pt-3 mt-2">
+                    <label class="font-semibold text-[#1D1D1F]">🌐 多人云端排行榜配置 (Supabase URL，可选)</label>
+                    <input type="text" id="adm-sb-url" class="apple-input w-full px-3 py-2 mt-1 outline-none" placeholder="https://xxx.supabase.co">
+                </div>
+                <div>
+                    <label class="font-semibold text-[#1D1D1F]">Supabase Anon Key (可选)</label>
+                    <input type="password" id="adm-sb-key" class="apple-input w-full px-3 py-2 mt-1 outline-none" placeholder="eyJhbGci...">
+                </div>
+
+                <div id="adm-test-status" class="text-[12px] font-medium"></div>
+            </div>
+
             <div class="flex space-x-2 pt-2">
-                <button onclick="saveAdminConfig()" class="flex-1 py-2.5 bg-purple-600 text-white rounded-xl text-xs font-semibold hover:bg-purple-700">保存配置</button>
-                <button onclick="closeAdminModal()" class="px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-200">取消</button>
+                <button onclick="testAIConnection()" class="apple-btn flex-1 py-2.5 bg-black/[0.06] text-[#1D1D1F] rounded-xl text-[13px] font-semibold">⚡ 测试 AI 连接</button>
+                <button onclick="saveAdminSettings()" class="apple-btn flex-1 py-2.5 bg-[#5856D6] text-white rounded-xl text-[13px] font-semibold">保存设置</button>
             </div>
-        </div>
-    </div>
-
-    <!-- 登录/注册弹窗 -->
-    <div id="login-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-xl">
-            <div class="flex justify-between items-center font-bold text-sm text-slate-900 border-b pb-2">
-                <span>👤 账号登录 / 注册</span>
-                <button onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-600">✕</button>
-            </div>
-            <div class="space-y-3 text-xs">
-                <div>
-                    <label class="font-semibold text-slate-700">昵称</label>
-                    <input type="text" id="input-username" class="w-full p-2.5 mt-1 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-purple-500" placeholder="例如：Geralt">
-                </div>
-                <div>
-                    <label class="font-semibold text-slate-700">邮箱</label>
-                    <input type="email" id="input-email" class="w-full p-2.5 mt-1 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-purple-500" placeholder="例如：2214583997@qq.com">
-                </div>
-            </div>
-            <button onclick="submitLogin()" class="w-full py-2.5 bg-purple-600 text-white rounded-xl text-xs font-semibold hover:bg-purple-700">立即登录 / 注册 (送 100 额度)</button>
-        </div>
-    </div>
-
-    <!-- 卡片管理弹窗 -->
-    <div id="card-manager-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl p-5 max-w-md w-full max-h-[80vh] flex flex-col space-y-3 shadow-xl">
-            <div class="flex justify-between items-center font-bold text-sm text-slate-900 border-b pb-2">
-                <span>📚 累计卡片管理 (<span id="manager-card-count">0</span>)</span>
-                <button onclick="closeCardManager()" class="text-slate-400 hover:text-slate-600">✕</button>
-            </div>
-            <div id="manager-card-list" class="flex-1 overflow-y-auto space-y-2 text-xs"></div>
         </div>
     </div>
 
     <script>
-        // 数据持久化与状态管理
-        let appData = JSON.parse(localStorage.getItem('kouyu_狂练_data')) || {
-            user: null, // {name, email}
+        // ================= 1. 站长预置配置（你也可以直接在代码这里填好） =================
+        const DEFAULT_ADMIN = {
+            apiUrl: "https://api.deepseek.com",
+            apiKey: "", // 留空自动走内置免费云端 AI，填了则优先走你的 Key
+            apiModel: "deepseek-chat",
+            supabaseUrl: "", // 选填：填入后排行榜自动变为全网多人实时共享
+            supabaseKey: ""
+        };
+
+        // 丰富的场景题库
+        const SCENE_BANK = {
+            daily: [
+                { cn: "我刚起床，脑子还没完全清醒。", scene: "早晨和朋友聊天", tag: "描述状态", level: "简单" },
+                { cn: "昨晚没睡好，今天一整天都昏昏沉沉的。", scene: "早起和室友吐槽", tag: "生理状态", level: "简单" },
+                { cn: "冰箱里什么吃的都没了，我们点外卖吧。", scene: "周末居家", tag: "日常提议", level: "简单" },
+                { cn: "我出门太急，好像把钥匙锁在家里了。", scene: "出门突发状况", tag: "突发事件", level: "中等" }
+            ],
+            work: [
+                { cn: "我手头有好几个紧急任务，今天实在腾不出空。", scene: "婉拒同事请求", tag: "工作沟通", level: "中等" },
+                { cn: "我们先把核心问题定下来，细节稍后再对齐。", scene: "项目会议讨论", tag: "会议控场", level: "进阶" },
+                { cn: "这份方案还有一些细节需要打磨。", scene: "向主管汇报进度", tag: "进度反馈", level: "中等" }
+            ],
+            social: [
+                { cn: "好久不见！你最近在忙什么呢？", scene: "老朋友偶遇", tag: "寒暄破冰", level: "简单" },
+                { cn: "这家店周末总是排长队，幸好我们提前预约了。", scene: "和朋友聚餐", tag: "餐厅闲聊", level: "中等" },
+                { cn: "别客气，这顿我请，下次你再请回来就好。", scene: "结账买单", tag: "人情往来", level: "简单" }
+            ],
+            emotion: [
+                { cn: "这件事情完全出乎我的意料，我一时不知道该说什么。", scene: "表达震惊", tag: "情绪反馈", level: "中等" },
+                { cn: "别给自己太大压力，你已经做得非常棒了。", scene: "安慰焦虑的朋友", tag: "情感支持", level: "简单" }
+            ]
+        };
+
+        // ================= 2. 真实状态机初始化（绝无假卡片、绝无假排行榜） =================
+        const STORAGE_KEY = "kouyu_kuanglian_v3_state";
+        let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+            user: null, // { id, name, email }
             quota: 100,
-            cards: [], // 收集的卡片
-            focusMinutes: 12,
-            streakDays: 1,
-            totalReview: 0,
-            todayNew: 0,
-            todayReview: 0,
-            joinedLeaderboard: false,
-            adminConfig: {
-                baseUrl: "https://api.deepseek.com/v1",
-                apiKey: "",
-                model: "deepseek-chat"
+            accent: "en-US",
+            cards: [], // 初始 0 张卡片！完全由用户在首页学习后存入
+            stats: {
+                focusMinutes: 0,
+                totalReviews: 0,
+                dailyRecords: {} // { "YYYY-MM-DD": { newCards: 0, reviews: 0, aiUsed: 0, checkedIn: false } }
             },
-            calendar: {} // {"2026-06-06": true}
+            leaderboard: {
+                joined: false,
+                tab: "review",
+                localMembers: [] // 仅存真实加入的用户
+            },
+            admin: { ...DEFAULT_ADMIN }
         };
 
-        let currentHomeMode = 'ai'; // 'ai' or 'manual'
-        let currentPolishResult = null;
-        let currentReviewIndex = 0;
-        let focusTimerInterval = null;
+        let homeMode = "ai"; // 'ai' | 'manual'
+        let currentSceneObj = null;
+        let latestPolishData = null;
+        let reviewIdx = 0;
 
-        // 初始化运行
-        window.onload = function() {
-            updateUI();
-            initCalendar();
-            startFocusTimer();
-        };
-
-        function saveData() {
-            localStorage.setItem('kouyu_狂练_data', JSON.stringify(appData));
+        function getTodayKey() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         }
 
-        // 标签切换
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('nav button').forEach(el => {
-                el.classList.remove('text-purple-600');
-                el.classList.add('text-slate-400');
-            });
-            document.getElementById('tab-' + tabId).classList.add('active');
-            document.getElementById('tab-btn-' + tabId).classList.remove('text-slate-400');
-            document.getElementById('tab-btn-' + tabId).classList.add('text-purple-600');
-
-            if (tabId === 'review') renderReviewCard();
-            if (tabId === 'data') updateDataStats();
-            if (tabId === 'mine') updateMineView();
+        function ensureTodayRecord() {
+            const k = getTodayKey();
+            if (!state.stats.dailyRecords[k]) {
+                state.stats.dailyRecords[k] = { newCards: 0, reviews: 0, aiUsed: 0, checkedIn: false };
+            }
+            return state.stats.dailyRecords[k];
         }
 
-        // 首页模式切换
-        function setHomeMode(mode) {
-            currentHomeMode = mode;
-            const btnAi = document.getElementById('btn-mode-ai');
-            const btnManual = document.getElementById('btn-mode-manual');
-            const sceneBox = document.getElementById('scene-tag-box');
-            const cnInput = document.getElementById('home-cn-input');
-
-            if (mode === 'ai') {
-                btnAi.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-white shadow-sm text-purple-600 transition";
-                btnManual.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-500 transition";
-                sceneBox.classList.add('hidden');
-                cnInput.value = "我刚起床，脑子还没完全清醒。";
-            } else {
-                btnManual.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg bg-white shadow-sm text-purple-600 transition";
-                btnAi.className = "flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-500 transition";
-                sceneBox.classList.remove('hidden');
-                cnInput.value = "";
-                cnInput.placeholder = "请输入你想表达的中文...";
+        function checkAndUpdateCheckIn() {
+            const rec = ensureTodayRecord();
+            // 规则：每天复习5次、用一次AI润色或追问，或新建一张卡片即可打卡
+            if (rec.reviews >= 5 || rec.aiUsed >= 1 || rec.newCards >= 1) {
+                rec.checkedIn = true;
             }
         }
 
-        // 随机练一句
-        function randomPractice() {
-            const pool = [
-                { cn: "我刚起床，脑子还没完全清醒。", scene: "早晨和朋友聊天" },
-                { cn: "今天工作太忙了，简直焦头烂额。", scene: "职场日常沟通" },
-                { cn: "你周末一般喜欢做些什么消遣？", scene: "休闲社交破冰" },
-                { cn: "这件事情完全出乎我的意料。", scene: "表达惊讶反应" },
-                { cn: "我们得抓紧时间，不然赶不上末班车了。", scene: "催促同行伙伴" }
-            ];
-            const item = pool[Math.floor(Math.random() * pool.length)];
-            currentHomeMode = 'ai';
-            setHomeMode('ai');
-            document.getElementById('home-cn-input').value = item.cn;
-            document.getElementById('scene-title-text').innerText = "场景：" + item.scene;
-            document.getElementById('scene-tag-box').classList.remove('hidden');
-        }
-
-        // AI 润色功能 (调用大模型或智能模拟)
-        async function handleAIPolish() {
-            const cnText = document.getElementById('home-cn-input').value.trim();
-            const userEn = document.getElementById('home-en-input').value.trim();
-
-            if (!cnText) {
-                alert('请先输入或随机选择一句中文！');
-                return;
-            }
-            if (appData.quota <= 0) {
-                alert('AI 额度已用完，请使用兑换码补充！');
-                return;
-            }
-
-            const polishCard = document.getElementById('polish-result-card');
-            const polishBody = document.getElementById('polish-content-body');
-            polishCard.classList.remove('hidden');
-            polishBody.innerHTML = `<div class="text-purple-600 animate-pulse py-4 text-center">🤖 AI 正在深度润色与纠错中...</div>`;
-
-            let resultObj = null;
-
-            if (appData.adminConfig.apiKey) {
-                try {
-                    const prompt = `用户想表达的中文是：“${cnText}”。用户尝试写的英文是：“${userEn || '无'}”。请扮演资深英语口语教练，用 JSON 格式返回润色结果：
-                    {
-                      "bestEnglish": "最地道自然的英文整句",
-                      "analysis1": "指出用户英文中的第一处语法或用法误区（若无则给母语者更常用的地道替换表达）",
-                      "analysis2": "指出第二处优化点或补充更口语化的整块固定搭配表达",
-                      "nativeCombo": "连起来读最自然的范例"
-                    }`;
-                    
-                    const res = await fetch(`${appData.adminConfig.baseUrl}/chat/completions`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${appData.adminConfig.apiKey}`
-                        },
-                        body: JSON.stringify({
-                            model: appData.adminConfig.model,
-                            messages: [{ role: "user", content: prompt }],
-                            temperature: 0.7
-                        })
-                    });
-                    const data = await res.json();
-                    let content = data.choices[0].message.content;
-                    content = content.replace(/```json/g, '').replace(/```/g, '').trim();
-                    resultObj = JSON.parse(content);
-                } catch (err) {
-                    console.error("API 调用失败，启用智能兜底模拟", err);
+        function calculateStreak() {
+            let streak = 0;
+            const d = new Date();
+            for (let i = 0; i < 365; i++) {
+                const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                if (state.stats.dailyRecords[k]?.checkedIn) {
+                    streak++;
+                } else if (i > 0) {
+                    break;
                 }
+                d.setDate(d.getDate() - 1);
+            }
+            return streak;
+        }
+
+        function saveState() {
+            checkAndUpdateCheckIn();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            syncUserToLeaderboard();
+        }
+
+        // ================= 3. 核心 AI 引擎（支持免配免费云端 AI + 自定义 Key） =================
+        async function callLLM(messages, jsonMode = false) {
+            const customKey = (state.admin.apiKey || DEFAULT_ADMIN.apiKey || "").trim();
+            let baseUrl = (state.admin.apiUrl || DEFAULT_ADMIN.apiUrl || "https://api.deepseek.com").trim().replace(/\/+$/, "");
+            const model = (state.admin.apiModel || DEFAULT_ADMIN.apiModel || "deepseek-chat").trim();
+
+            // 1. 如果配置了自定义 API Key，优先调用自定义接口
+            if (customKey) {
+                let endpoint = baseUrl;
+                if (!endpoint.endsWith("/chat/completions")) {
+                    endpoint = endpoint.endsWith("/v1") ? `${endpoint}/chat/completions` : `${endpoint}/v1/chat/completions`;
+                }
+                const res = await fetch(endpoint, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${customKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: messages,
+                        temperature: 0.6
+                    })
+                });
+                if (!res.ok) throw new Error(`自定义 API 错误 (${res.status})`);
+                const data = await res.json();
+                return data.choices[0].message.content;
             }
 
-            // 智能兜底模拟 (如果没配 API Key 或调用失败)
-            if (!resultObj) {
-                resultObj = {
-                    bestEnglish: "I just woke up, so my brain isn't really awake yet.",
-                    analysis1: "“I just get up” 时态不够地道，母语者习惯用过去式 “I just woke up” 表示刚醒来。",
-                    analysis2: "“brain are not clear” 语法错误且不够生动，建议使用 “brain isn't really awake yet” 或直接说 “I'm still groggy”。",
-                    nativeCombo: "I just woke up, so I'm still groggy."
+            // 2. 免配置零门槛方案：直接调用免费 CORS 友好的 Pollinations OpenAI 兼容接口
+            const freeRes = await fetch("https://text.pollinations.ai/openai", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    model: "openai",
+                    messages: messages,
+                    temperature: 0.6,
+                    jsonMode: jsonMode
+                })
+            });
+            if (!freeRes.ok) throw new Error("免费云端 AI 通道繁忙");
+            const freeData = await freeRes.json();
+            return freeData.choices[0].message.content;
+        }
+
+        // 解析 JSON 工具
+        function extractJSON(rawText) {
+            const cleaned = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+            const firstBrace = cleaned.indexOf("{");
+            const lastBrace = cleaned.lastIndexOf("}");
+            if (firstBrace !== -1 && lastBrace !== -1) {
+                return JSON.parse(cleaned.substring(firstBrace, lastBrace + 1));
+            }
+            return JSON.parse(cleaned);
+        }
+
+        // ================= 4. 首页：AI 制卡与手动制卡逻辑 =================
+        function switchHomeMode(mode) {
+            homeMode = mode;
+            document.getElementById("seg-ai").classList.toggle("active", mode === "ai");
+            document.getElementById("seg-manual").classList.toggle("active", mode === "manual");
+            document.getElementById("home-en-label").innerText = mode === "ai" ? "我尝试写的英文" : "直接输入目标英文";
+            document.getElementById("home-hint-text").innerText = mode === "ai"
+                ? "先试着用英文写出上面这句话，写错也没关系，AI 会帮你改 ✍️"
+                : "手动制卡模式：输入中英文后直接存入复习库，不消耗 AI 额度 📌";
+            document.getElementById("home-main-btn-text").innerText = mode === "ai"
+                ? "AI 润色 (AI Polish)"
+                : "直接存入复习卡片";
+        }
+
+        function openRandomScene() {
+            document.getElementById("scene-panel").classList.remove("hidden");
+            pickNextSceneSentence();
+        }
+
+        function closeRandomScene() {
+            document.getElementById("scene-panel").classList.add("hidden");
+            currentSceneObj = null;
+        }
+
+        function pickNextSceneSentence() {
+            const cat = document.getElementById("scene-category").value;
+            const list = SCENE_BANK[cat] || SCENE_BANK.daily;
+            const item = list[Math.floor(Math.random() * list.length)];
+            currentSceneObj = item;
+            document.getElementById("home-cn").value = item.cn;
+            document.getElementById("scene-desc").innerText = item.scene;
+            document.getElementById("scene-tag").innerText = item.tag;
+            document.getElementById("scene-level").innerText = item.level;
+            document.getElementById("home-en").placeholder = "试着用英文说出上面这句中文，写错也没关系";
+        }
+
+        async function submitHomeAction() {
+            const cn = document.getElementById("home-cn").value.trim();
+            const en = document.getElementById("home-en").value.trim();
+
+            if (!cn) {
+                alert("请先输入你想表达的中文句子！");
+                return;
+            }
+
+            // 手动制卡直接保存
+            if (homeMode === "manual") {
+                if (!en) {
+                    alert("手动制卡模式下，请填写目标英文句子！");
+                    return;
+                }
+                addCardToDeck({
+                    cn,
+                    scene: currentSceneObj ? currentSceneObj.scene : "日常表达",
+                    bestEn: en,
+                    point1: "手动创建的地道表达卡片",
+                    point2: "多跟读几遍，形成肌肉记忆",
+                    examples: [en]
+                });
+                document.getElementById("home-cn").value = "";
+                document.getElementById("home-en").value = "";
+                return;
+            }
+
+            // AI 制卡模式
+            if (state.quota <= 0) {
+                alert("剩余 AI 额度不足，请前往「我的」页面使用兑换码充值！");
+                return;
+            }
+
+            const btn = document.getElementById("home-main-btn");
+            const btnText = document.getElementById("home-main-btn-text");
+            const cardEl = document.getElementById("home-polish-card");
+            const bodyEl = document.getElementById("home-polish-body");
+
+            btn.disabled = true;
+            btnText.innerText = "AI 教练正在深度批改...";
+            cardEl.classList.remove("hidden");
+            bodyEl.innerHTML = `<div class="py-6 text-center text-[#86868B] animate-pulse">正在逐词分析你的表达并生成母语地道说法...</div>`;
+
+            try {
+                const sysPrompt = `你是一位严厉又温暖的北美母语英语口语教练。用户会给你一句【想表达的中文】和【用户尝试写的英文】。
+请你严格返回纯 JSON 格式（不要有多余解释），字段如下：
+{
+  "bestEn": "最自然、母语者最常用的英文表达（1句）",
+  "point1": "第一处针对用户英文的具体问题指出与替换建议（如果用户没写英文，则拆解前半句核心语块及2个例句）",
+  "point2": "第二处针对用户英文的具体问题指出与替换建议（或者后半句核心地道语块及2个例句）",
+  "summary": "连起来最自然的整句总结与跟读建议"
+}`;
+                const userPrompt = `【想表达的中文】：${cn}\n【用户尝试写的英文】：${en || "（用户未填写，请直接给出地道表达与两处核心语块拆解）"}`;
+
+                const raw = await callLLM([
+                    { role: "system", content: sysPrompt },
+                    { role: "user", content: userPrompt }
+                ], true);
+
+                const parsed = extractJSON(raw);
+                latestPolishData = {
+                    cn,
+                    userEn: en,
+                    scene: currentSceneObj ? currentSceneObj.scene : "日常口语场景",
+                    bestEn: parsed.bestEn || "Here is a natural way to say it.",
+                    point1: parsed.point1 || "",
+                    point2: parsed.point2 || "",
+                    summary: parsed.summary || parsed.bestEn
                 };
+
+                // 扣减额度并记录今日 AI 使用
+                state.quota = Math.max(0, state.quota - 1);
+                ensureTodayRecord().aiUsed += 1;
+                saveState();
+                refreshAllViews();
+
+                bodyEl.innerHTML = renderPolishReportHTML(latestPolishData);
+            } catch (err) {
+                bodyEl.innerHTML = `<div class="p-3 bg-rose-50 text-rose-600 rounded-xl text-[13px]">AI 响应超时（${err.message}），请再点一次「AI 润色」重试。</div>`;
+            } finally {
+                btn.disabled = false;
+                btnText.innerText = "AI 润色 (AI Polish)";
             }
+        }
 
-            currentPolishResult = { cn: cnText, ...resultObj };
-            appData.quota -= 1;
-            saveData();
-            updateUI();
-
-            polishBody.innerHTML = `
-                <div class="space-y-2">
-                    <div class="bg-purple-50 p-2.5 rounded-xl border border-purple-100">
-                        <span class="font-bold text-purple-800">✨ 推荐地道表达：</span>
-                        <div class="text-sm font-semibold text-purple-900 mt-0.5">${resultObj.bestEnglish}</div>
-                    </div>
-                    <div class="text-slate-600 space-y-1">
-                        <div>1. ${resultObj.analysis1}</div>
-                        <div>2. ${resultObj.analysis2}</div>
-                    </div>
-                    <div class="bg-slate-50 p-2 rounded-lg text-slate-500">
-                        💡 连起来最自然：<span class="font-medium text-slate-800">${resultObj.nativeCombo}</span>
+        function renderPolishReportHTML(data) {
+            return `
+                <div class="p-3.5 rounded-2xl bg-[#5856D6]/8 border border-[#5856D6]/15 space-y-1">
+                    <div class="text-[11px] font-semibold text-[#5856D6] uppercase tracking-wider">地道母语表达</div>
+                    <div class="text-[16px] font-bold text-[#1D1D1F]">${escapeHtml(data.bestEn)}</div>
+                </div>
+                <div class="space-y-2.5 pt-1 text-[13.5px] text-[#1D1D1F] leading-relaxed">
+                    <div class="font-semibold text-[#86868B] text-[12px]">问题拆解与语块记忆：</div>
+                    <div class="p-3 rounded-xl bg-black/[0.02] border border-black/[0.04]">1. ${escapeHtml(data.point1)}</div>
+                    <div class="p-3 rounded-xl bg-black/[0.02] border border-black/[0.04]">2. ${escapeHtml(data.point2)}</div>
+                    <div class="p-3 rounded-xl bg-emerald-500/8 text-emerald-950 text-[13px] font-medium">
+                        💡 ${escapeHtml(data.summary)}
                     </div>
                 </div>
             `;
         }
 
-        // 保存卡片到复习
-        function saveCardFromPolish() {
-            if (!currentPolishResult) return;
-            appData.cards.push({
-                id: Date.now(),
-                cn: currentPolishResult.cn,
-                en: currentPolishResult.bestEnglish,
-                detail: currentPolishResult
-            });
-            appData.todayNew += 1;
-            recordActivity();
-            saveData();
-            alert('🎉 成功存入复习卡片！快去【复习】模块开始温习吧。');
-            document.getElementById('polish-result-card').classList.add('hidden');
-            document.getElementById('home-cn-input').value = '';
-            document.getElementById('home-en-input').value = '';
-            currentPolishResult = null;
+        function speakCurrentPolished() {
+            if (latestPolishData?.bestEn) speakText(latestPolishData.bestEn);
         }
 
-        // 渲染复习卡片
-        function renderReviewCard() {
-            const container = document.getElementById('review-card-container');
-            const indicator = document.getElementById('review-round-indicator');
+        function savePolishedCardToReview() {
+            if (!latestPolishData) return;
+            addCardToDeck(latestPolishData);
+            document.getElementById("home-polish-card").classList.add("hidden");
+            document.getElementById("home-cn").value = "";
+            document.getElementById("home-en").value = "";
+            latestPolishData = null;
+        }
 
-            if (appData.cards.length === 0) {
-                indicator.innerText = "当前暂无待复习卡片";
-                container.innerHTML = `
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 text-center py-12 text-slate-400 text-sm">
-                        📭 还没有收集卡片，快去【首页】造句并存入复习卡片吧！
+        function addCardToDeck(cardObj) {
+            state.cards.unshift({
+                id: Date.now(),
+                cn: cardObj.cn,
+                scene: cardObj.scene || "日常口语",
+                bestEn: cardObj.bestEn,
+                point1: cardObj.point1 || "",
+                point2: cardObj.point2 || "",
+                summary: cardObj.summary || cardObj.bestEn,
+                createdAt: getTodayKey()
+            });
+            ensureTodayRecord().newCards += 1;
+            saveState();
+            refreshAllViews();
+            alert("✅ 已成功存入【复习】卡片库！");
+        }
+
+        // ================= 5. 复习页与「问问 AI 教练」实时交互 =================
+        function renderReviewSection() {
+            const wrapper = document.getElementById("review-card-wrapper");
+            const roundText = document.getElementById("review-round-text");
+            const pBar = document.getElementById("review-progress-bar");
+
+            const total = state.cards.length;
+            if (total === 0) {
+                roundText.innerText = "暂无待复习卡片 (0 / 0)";
+                pBar.style.width = "0%";
+                wrapper.innerHTML = `
+                    <div class="apple-card p-8 text-center space-y-3">
+                        <div class="w-12 h-12 rounded-2xl bg-[#5856D6]/10 text-[#5856D6] flex items-center justify-center mx-auto font-bold text-lg">📭</div>
+                        <div class="text-[15px] font-semibold text-[#1D1D1F]">复习库还是空的</div>
+                        <p class="text-[13px] text-[#86868B]">先去「首页」输入你想说的中文并点击 AI 润色，觉得有用的句子点击「存入复习卡片库」就会出现在这里。</p>
+                        <button onclick="switchTab('home')" class="apple-btn mt-2 px-5 py-2.5 bg-[#5856D6] text-white text-[13px] font-semibold rounded-xl">去首页造句制卡</button>
                     </div>
                 `;
                 return;
             }
 
-            if (currentReviewIndex >= appData.cards.length) currentReviewIndex = 0;
-            const card = appData.cards[currentReviewIndex];
-            indicator.innerText = `Round 1: ${currentReviewIndex + 1} / ${appData.cards.length}`;
+            if (reviewIdx >= total) reviewIdx = 0;
+            const card = state.cards[reviewIdx];
+            const pct = Math.round(((reviewIdx + 1) / total) * 100);
+            pBar.style.width = `${pct}%`;
+            roundText.innerText = `Round 1: ${reviewIdx + 1} / ${total}`;
 
-            container.innerHTML = `
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 relative space-y-4">
-                    <button onclick="deleteCard(${card.id})" class="absolute top-4 right-4 text-slate-300 hover:text-rose-500">🗑️</button>
-                    <div class="text-center space-y-1">
-                        <div class="text-base font-bold text-slate-900">${card.cn}</div>
-                        <div class="text-xs text-slate-400">(场景：日常口语输出)</div>
+            wrapper.innerHTML = `
+                <div class="apple-card p-6 space-y-5 relative">
+                    <button onclick="deleteReviewCard(${card.id})" class="apple-btn absolute top-4 right-4 text-[#86868B] hover:text-rose-500 p-1.5" title="删除此卡片">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                    </button>
+
+                    <div class="text-center space-y-2 pt-3">
+                        <h2 class="text-[20px] font-bold text-[#1D1D1F] leading-snug">${escapeHtml(card.cn)}</h2>
+                        <p class="text-[13px] text-[#86868B]">(场景：${escapeHtml(card.scene)})</p>
                     </div>
-                    <div>
-                        <label class="text-xs font-semibold text-slate-700 block mb-1">请输入英文翻译</label>
-                        <input type="text" id="review-user-answer" class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-purple-500" placeholder="输入你的英文翻译...">
+
+                    <div class="space-y-2 pt-1">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[13px] font-semibold text-[#1D1D1F]">请输入英文翻译</label>
+                            <button onclick="startSpeechToText('review-attempt')" class="text-[12px] text-[#5856D6] font-medium">🎤 语音说出</button>
+                        </div>
+                        <textarea id="review-attempt" rows="3" class="apple-input w-full p-3.5 text-[15px] outline-none resize-none" placeholder="输入你的英文翻译..."></textarea>
                     </div>
-                    <div class="flex space-x-2">
-                        <button onclick="showReviewAnswer('${card.en.replace(/'/g, "\\'")}')" class="flex-1 py-2.5 border border-slate-200 text-slate-700 font-semibold rounded-xl text-xs hover:bg-slate-50 transition">👁️ 对照答案</button>
-                        <button onclick="submitReviewCheck()" class="flex-1 py-2.5 bg-slate-800 text-white font-semibold rounded-xl text-xs hover:bg-slate-900 transition">✓ 完成核对并下一张</button>
+
+                    <!-- 对照答案隐藏区 -->
+                    <div id="review-answer-reveal" class="hidden p-4 rounded-2xl bg-[#F5F5F7] border border-black/[0.05] space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[12px] font-semibold text-[#5856D6]">参考地道答案</span>
+                            <button onclick="speakText('${ card.bestEn.replace(/'/g, "\\'") }')" class="text-[12px] text-[#5856D6] font-medium">🔊 朗读</button>
+                        </div>
+                        <div class="text-[15px] font-bold text-[#1D1D1F]">${escapeHtml(card.bestEn)}</div>
+                        ${card.summary ? `<div class="text-[12px] text-[#86868B]">${escapeHtml(card.summary)}</div>` : ""}
                     </div>
-                    <div id="review-answer-box" class="hidden bg-purple-50 p-3 rounded-xl text-xs text-purple-900 font-medium"></div>
+
+                    <!-- 底部双按钮（完全对应图1：对照答案 | AI 润色） -->
+                    <div class="grid grid-cols-2 gap-3 pt-1">
+                        <button onclick="toggleReviewAnswer()" class="apple-btn py-3 rounded-xl border border-black/[0.1] bg-white text-[#1D1D1F] font-semibold text-[14px] flex items-center justify-center space-x-1.5">
+                            <span>👁️</span><span>对照答案</span>
+                        </button>
+                        <button onclick="gradeReviewAttemptWithAI()" id="review-polish-btn" class="apple-btn py-3 rounded-xl bg-[#5856D6] text-white font-semibold text-[14px] flex items-center justify-center space-x-1.5 shadow-md shadow-indigo-500/15">
+                            <span>✓</span><span>AI 润色</span>
+                        </button>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2 border-t border-black/[0.04] text-[12px] text-[#86868B]">
+                        <button onclick="prevReviewCard()" class="hover:text-[#1D1D1F]">← 上一张</button>
+                        <button onclick="markCardReviewedAndNext()" class="text-[#5856D6] font-semibold hover:underline">完成本张，下一张 →</button>
+                    </div>
                 </div>
             `;
         }
 
-        function showReviewAnswer(correctEn) {
-            const box = document.getElementById('review-answer-box');
-            box.classList.remove('hidden');
-            box.innerHTML = `💡 标准地道表达：<strong>${correctEn}</strong>`;
+        function toggleReviewAnswer() {
+            const el = document.getElementById("review-answer-reveal");
+            if (el) el.classList.toggle("hidden");
         }
 
-        function submitReviewCheck() {
-            appData.todayReview += 1;
-            appData.totalReview += 1;
-            recordActivity();
-            saveData();
-            currentReviewIndex = (currentReviewIndex + 1) % appData.cards.length;
-            renderReviewCard();
+        function prevReviewCard() {
+            if (state.cards.length === 0) return;
+            reviewIdx = (reviewIdx - 1 + state.cards.length) % state.cards.length;
+            renderReviewSection();
         }
 
-        function deleteCard(id) {
-            appData.cards = appData.cards.filter(c => c.id !== id);
-            saveData();
-            renderReviewCard();
-            updateDataStats();
+        function markCardReviewedAndNext() {
+            if (state.cards.length === 0) return;
+            state.stats.totalReviews += 1;
+            ensureTodayRecord().reviews += 1;
+            saveState();
+            reviewIdx = (reviewIdx + 1) % state.cards.length;
+            renderReviewSection();
+            refreshAllViews();
         }
 
-        // 问问 AI 教练
-        async function askAICoach() {
-            const input = document.getElementById('coach-question-input');
-            const chatBox = document.getElementById('coach-chat-box');
+        function deleteReviewCard(id) {
+            state.cards = state.cards.filter(c => c.id !== id);
+            saveState();
+            renderReviewSection();
+            refreshAllViews();
+        }
+
+        // 在复习页点击「AI 润色」：自动把用户写的句子发给下方的 AI 教练（复刻图2效果）
+        async function gradeReviewAttemptWithAI() {
+            if (state.cards.length === 0) return;
+            const card = state.cards[reviewIdx];
+            const attempt = (document.getElementById("review-attempt")?.value || "").trim();
+            if (!attempt) {
+                alert("请先在上方输入框写出你的英文翻译，再点击 AI 润色！");
+                return;
+            }
+            const questionText = `${attempt} 这样写哪里有问题？`;
+            await triggerCoachConversation(questionText, card);
+            // 计入一次复习
+            state.stats.totalReviews += 1;
+            ensureTodayRecord().reviews += 1;
+            saveState();
+            refreshAllViews();
+        }
+
+        async function sendCoachQuestion() {
+            const input = document.getElementById("coach-input");
             const q = input.value.trim();
             if (!q) return;
-
-            chatBox.innerHTML += `<div class="text-right"><span class="inline-block bg-purple-600 text-white px-3 py-1.5 rounded-xl">${q}</span></div>`;
-            input.value = '';
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            let reply = "母语者在日常交流中更倾向于使用简洁的固定搭配，这样表达不仅地道而且自然，多跟读几遍就能形成肌肉记忆！";
-
-            if (appData.adminConfig.apiKey) {
-                try {
-                    const res = await fetch(`${appData.adminConfig.baseUrl}/chat/completions`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${appData.adminConfig.apiKey}`
-                        },
-                        body: JSON.stringify({
-                            model: appData.adminConfig.model,
-                            messages: [{ role: "user", content: `作为资深英语口语教练，简明扼要地回答学员提问：“${q}”` }],
-                            temperature: 0.7
-                        })
-                    });
-                    const data = await res.json();
-                    reply = data.choices[0].message.content;
-                } catch (e) {
-                    console.error(e);
-                }
-            }
-
-            chatBox.innerHTML += `<div class="text-left"><span class="inline-block bg-white border border-slate-200 text-slate-800 px-3 py-1.5 rounded-xl">${reply}</span></div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
+            input.value = "";
+            const currentCard = state.cards[reviewIdx] || null;
+            await triggerCoachConversation(q, currentCard);
         }
 
-        // 浏览器原生 TTS 朗读
+        async function triggerCoachConversation(userQuestion, cardContext) {
+            if (state.quota <= 0) {
+                alert("AI 额度已用完，请在「我的」页面使用兑换码补充额度！");
+                return;
+            }
+            const box = document.getElementById("coach-messages");
+            // 如果是初始提示文字则清空
+            if (box.querySelector(".text-center")) box.innerHTML = "";
+
+            // 1. 渲染右侧紫色用户提问气泡（完全还原图2）
+            box.innerHTML += `
+                <div class="flex justify-end">
+                    <div class="bg-[#6E56CF] text-white px-4 py-2.5 rounded-2xl rounded-tr-xs max-w-[85%] text-[14px] leading-relaxed shadow-xs">
+                        ${escapeHtml(userQuestion)}
+                    </div>
+                </div>
+            `;
+
+            const loadingId = "coach-load-" + Date.now();
+            box.innerHTML += `
+                <div id="${loadingId}" class="bg-white border border-black/[0.05] rounded-2xl p-4 text-[13px] text-[#86868B] animate-pulse">
+                    AI 教练正在分析解答...
+                </div>
+            `;
+            box.scrollTop = box.scrollHeight;
+
+            try {
+                const contextInfo = cardContext
+                    ? `当前复习卡片中文：“${cardContext.cn}”（场景：${cardContext.scene}，推荐地道表达：“${cardContext.bestEn}”）。`
+                    : "用户正在自由提问英语口语表达。";
+
+                const sysPrompt = `你是一位地道、直接的北美英语口语教练。${contextInfo}
+请直接像图2那样分段清晰地回答用户的问题：
+- 如果用户在问某句英文哪里有问题，请直接指出：“问题主要在两处，母语者不这么说：1. ... 2. ... 连起来最自然：...”并给出可直接整块背诵的简短例句。
+- 如果用户问的是单词、语法或区别，请用最通俗直白的大白话讲透，并配2个地道口语例句。`;
+
+                const reply = await callLLM([
+                    { role: "system", content: sysPrompt },
+                    { role: "user", content: userQuestion }
+                ], false);
+
+                state.quota = Math.max(0, state.quota - 1);
+                ensureTodayRecord().aiUsed += 1;
+                saveState();
+                refreshAllViews();
+
+                const formattedReply = escapeHtml(reply).replace(/\n/g, "<br>");
+                document.getElementById(loadingId).outerHTML = `
+                    <div class="bg-white border border-black/[0.06] rounded-2xl p-4 text-[14px] text-[#1D1D1F] leading-relaxed shadow-2xs space-y-2">
+                        <div>${formattedReply}</div>
+                    </div>
+                `;
+                box.scrollTop = box.scrollHeight;
+            } catch (err) {
+                document.getElementById(loadingId).outerHTML = `
+                    <div class="bg-rose-50 text-rose-600 rounded-2xl p-3 text-[13px]">
+                        教练连接超时（${err.message}），请重新发送试试。
+                    </div>
+                `;
+            }
+        }
+
+        function clearCoachChat() {
+            document.getElementById("coach-messages").innerHTML = `
+                <div class="text-[13px] text-[#86868B] text-center py-4">
+                    对话已清空。随时输入你的问题向 AI 教练提问。
+                </div>
+            `;
+        }
+
+        // ================= 6. 数据页与打卡日历渲染 =================
+        function renderDataSection() {
+            const todayRec = ensureTodayRecord();
+            const streak = calculateStreak();
+
+            document.getElementById("stat-focus").innerText = state.stats.focusMinutes;
+            document.getElementById("stat-streak").innerText = streak;
+            document.getElementById("stat-cards-total").innerText = state.cards.length;
+            document.getElementById("stat-today-new").innerText = todayRec.newCards;
+            document.getElementById("stat-today-rev").innerText = todayRec.reviews;
+            document.getElementById("stat-total-rev").innerText = state.stats.totalReviews;
+
+            // 渲染最近 14 天打卡日历
+            const calEl = document.getElementById("calendar-days");
+            calEl.innerHTML = "";
+            for (let i = 13; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                const checked = state.stats.dailyRecords[k]?.checkedIn;
+                const isToday = i === 0;
+                calEl.innerHTML += `
+                    <div class="py-2 rounded-xl flex flex-col items-center justify-center ${
+                        checked
+                            ? 'bg-[#5856D6] text-white font-semibold shadow-xs'
+                            : isToday
+                            ? 'bg-black/[0.06] text-[#1D1D1F] font-semibold'
+                            : 'bg-black/[0.02] text-[#86868B]'
+                    }">
+                        <span class="text-[12px]">${d.getDate()}</span>
+                        <span class="text-[9px] mt-0.5">${checked ? '✓' : (isToday ? '今' : '·')}</span>
+                    </div>
+                `;
+            }
+        }
+
+        function scrollToCalendar() {
+            document.getElementById("calendar-card")?.scrollIntoView({ behavior: "smooth" });
+        }
+
+        // 真实专注计时器（每满 60 秒真实增加 1 分钟）
+        setInterval(() => {
+            if (!document.hidden) {
+                state.stats.focusMinutes += 1;
+                saveState();
+                renderDataSection();
+            }
+        }, 60000);
+
+        // ================= 7. 我的页面 & 100% 真实排行榜（支持本地+云端 Supabase） =================
+        function switchLbTab(tab) {
+            state.leaderboard.tab = tab;
+            document.getElementById("lb-tab-review").classList.toggle("active", tab === "review");
+            document.getElementById("lb-tab-streak").classList.toggle("active", tab === "streak");
+            renderMineSection();
+        }
+
+        function joinLeaderboard() {
+            if (!state.user) {
+                alert("请先设置你的昵称和邮箱（完成注册），即可加入真实排行榜！");
+                openProfileModal();
+                return;
+            }
+            state.leaderboard.joined = true;
+            saveState();
+            renderMineSection();
+        }
+
+        function leaveLeaderboard() {
+            state.leaderboard.joined = false;
+            if (state.user) {
+                state.leaderboard.localMembers = state.leaderboard.localMembers.filter(m => m.id !== state.user.id);
+            }
+            saveState();
+            renderMineSection();
+        }
+
+        async function syncUserToLeaderboard() {
+            if (!state.user || !state.leaderboard.joined) return;
+            const entry = {
+                id: state.user.id,
+                name: state.user.name,
+                reviews: state.stats.totalReviews,
+                streak: calculateStreak(),
+                updatedAt: new Date().toISOString()
+            };
+
+            // 1. 更新真实本地成员表
+            const idx = state.leaderboard.localMembers.findIndex(m => m.id === entry.id);
+            if (idx >= 0) state.leaderboard.localMembers[idx] = entry;
+            else state.leaderboard.localMembers.push(entry);
+
+            // 2. 如果配置了 Supabase，自动同步到云端真实数据库
+            const sbUrl = (state.admin.supabaseUrl || DEFAULT_ADMIN.supabaseUrl || "").trim().replace(/\/+$/, "");
+            const sbKey = (state.admin.supabaseKey || DEFAULT_ADMIN.supabaseKey || "").trim();
+            if (sbUrl && sbKey) {
+                try {
+                    await fetch(`${sbUrl}/rest/v1/leaderboard`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "apikey": sbKey,
+                            "Authorization": `Bearer ${sbKey}`,
+                            "Prefer": "resolution=merge-duplicates"
+                        },
+                        body: JSON.stringify(entry)
+                    });
+                } catch (e) {
+                    console.warn("Supabase 同步略过:", e);
+                }
+            }
+        }
+
+        async function renderMineSection() {
+            // 1. 渲染用户资料
+            if (state.user) {
+                document.getElementById("mine-name").innerText = state.user.name;
+                document.getElementById("mine-email").innerText = `✉️ ${state.user.email} · 仅自己可见`;
+                document.getElementById("mine-avatar").innerText = state.user.name.charAt(0).toUpperCase();
+            } else {
+                document.getElementById("mine-name").innerText = "未注册学员";
+                document.getElementById("mine-email").innerText = "点击上方「修改 / 注册」创建个人档案";
+                document.getElementById("mine-avatar").innerText = "?";
+            }
+
+            // 2. 渲染额度礼包
+            document.getElementById("mine-quota").innerText = state.quota;
+            document.getElementById("mine-quota-bar").style.width = `${Math.min(100, state.quota)}%`;
+
+            // 3. 渲染排行榜状态
+            const inviteBox = document.getElementById("lb-invite-box");
+            const leaveBtn = document.getElementById("lb-leave-btn");
+            inviteBox.classList.toggle("hidden", state.leaderboard.joined);
+            leaveBtn.classList.toggle("hidden", !state.leaderboard.joined);
+
+            const streak = calculateStreak();
+            document.getElementById("lb-footer-status").innerText = state.leaderboard.joined
+                ? `你已上榜 · 累计复习 ${state.stats.totalReviews} 次 · 连续打卡 ${streak} 天`
+                : `你累计复习了 ${state.stats.totalReviews} 次（加入排行榜即可参与真实排名）`;
+
+            // 4. 获取真实排行榜数据（若配了 Supabase 则拉取全网真实用户，否则展示本地真实加入的用户）
+            let members = [...state.leaderboard.localMembers];
+            const sbUrl = (state.admin.supabaseUrl || DEFAULT_ADMIN.supabaseUrl || "").trim().replace(/\/+$/, "");
+            const sbKey = (state.admin.supabaseKey || DEFAULT_ADMIN.supabaseKey || "").trim();
+
+            if (sbUrl && sbKey) {
+                document.getElementById("lb-sync-badge").innerText = "🌐 云端实时排行";
+                try {
+                    const res = await fetch(`${sbUrl}/rest/v1/leaderboard?select=*&limit=50`, {
+                        headers: { "apikey": sbKey, "Authorization": `Bearer ${sbKey}` }
+                    });
+                    if (res.ok) members = await res.json();
+                } catch (e) {}
+            } else {
+                document.getElementById("lb-sync-badge").innerText = "真实自愿上榜";
+            }
+
+            // 排序
+            const sortBy = state.leaderboard.tab;
+            members.sort((a, b) => sortBy === "review" ? (b.reviews - a.reviews) : (b.streak - a.streak));
+
+            const listEl = document.getElementById("lb-list");
+            if (members.length === 0) {
+                listEl.innerHTML = `
+                    <div class="py-8 text-center text-[#86868B] text-[13px]">
+                        暂无学习者上榜，点击上方「加入排行榜」成为第一位真实上榜者！
+                    </div>
+                `;
+                return;
+            }
+
+            const medals = ["🥇", "🥈", "🥉"];
+            listEl.innerHTML = members.map((m, idx) => {
+                const isMe = state.user && m.id === state.user.id;
+                const badge = idx < 3 ? medals[idx] : `<span class="text-[#86868B] font-semibold px-1">${idx + 1}</span>`;
+                return `
+                    <div class="py-3 flex items-center justify-between ${isMe ? 'text-[#5856D6] font-semibold' : 'text-[#1D1D1F]'}">
+                        <div class="flex items-center space-x-2.5">
+                            <span>${badge}</span>
+                            <span>${escapeHtml(m.name)} ${isMe ? '(你)' : ''}</span>
+                        </div>
+                        <div class="text-[12px] text-[#86868B]">
+                            <strong class="text-[#1D1D1F] text-[14px]">${m.reviews}</strong> 次 · 打卡 ${m.streak} 天
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // 个人资料与兑换码
+        function openProfileModal() {
+            document.getElementById("prof-name").value = state.user?.name || "";
+            document.getElementById("prof-email").value = state.user?.email || "";
+            const m = document.getElementById("modal-profile");
+            m.classList.remove("hidden");
+            m.classList.add("flex");
+        }
+        function closeProfileModal() {
+            const m = document.getElementById("modal-profile");
+            m.classList.add("hidden");
+            m.classList.remove("flex");
+        }
+        function saveProfile() {
+            const name = document.getElementById("prof-name").value.trim();
+            const email = document.getElementById("prof-email").value.trim();
+            if (!name || !email) {
+                alert("请填写完整的昵称和邮箱！");
+                return;
+            }
+            const isNewUser = !state.user;
+            state.user = {
+                id: state.user?.id || ("u_" + Date.now()),
+                name,
+                email
+            };
+            if (isNewUser) state.quota = 100; // 新注册满额 100
+            saveState();
+            closeProfileModal();
+            refreshAllViews();
+        }
+
+        function promptRedeemCode() {
+            const code = prompt("请输入兑换码补充 AI 额度（站长测试兑换码：VIP666）：");
+            if (!code) return;
+            if (code.trim().toUpperCase() === "VIP666") {
+                state.quota = 100;
+                saveState();
+                refreshAllViews();
+                alert("🎉 兑换成功！你的 AI 额度已恢复至 100 / 100。");
+            } else {
+                alert("兑换码无效，请核对后再试。");
+            }
+        }
+
+        function handleLogout() {
+            if (!state.user) return;
+            if (confirm("确定要退出当前账号吗？本地学习卡片仍会保留。")) {
+                state.user = null;
+                state.leaderboard.joined = false;
+                saveState();
+                refreshAllViews();
+            }
+        }
+
+        // ================= 8. 全部卡片管理弹窗 =================
+        function openAllCardsModal() {
+            const m = document.getElementById("modal-cards");
+            const list = document.getElementById("all-cards-list");
+            m.classList.remove("hidden");
+            m.classList.add("flex");
+
+            if (state.cards.length === 0) {
+                list.innerHTML = `<div class="py-10 text-center text-[#86868B] text-[13px]">还没有收集任何卡片</div>`;
+                return;
+            }
+            list.innerHTML = state.cards.map(c => `
+                <div class="p-3.5 rounded-2xl bg-[#F5F5F7] flex items-center justify-between space-x-3">
+                    <div class="space-y-0.5 flex-1">
+                        <div class="text-[14px] font-semibold text-[#1D1D1F]">${escapeHtml(c.cn)}</div>
+                        <div class="text-[13px] text-[#5856D6] font-medium">${escapeHtml(c.bestEn)}</div>
+                    </div>
+                    <div class="flex items-center space-x-2 shrink-0">
+                        <button onclick="speakText('${c.bestEn.replace(/'/g, "\\'")}')" class="text-xs bg-white px-2.5 py-1.5 rounded-lg shadow-2xs">🔊</button>
+                        <button onclick="deleteReviewCard(${c.id});openAllCardsModal();" class="text-xs text-rose-500 px-2 py-1.5">删除</button>
+                    </div>
+                </div>
+            `).join("");
+        }
+        function closeAllCardsModal() {
+            const m = document.getElementById("modal-cards");
+            m.classList.add("hidden");
+            m.classList.remove("flex");
+        }
+
+        // ================= 9. 语音合成 (TTS) 与语音识别 (STT) =================
+        function toggleAccent() {
+            state.accent = state.accent === "en-US" ? "en-GB" : "en-US";
+            document.getElementById("accent-label").innerText = state.accent === "en-US" ? "🇺🇸 美式发音" : "🇬🇧 英式发音";
+            saveState();
+        }
+
         function speakText(text) {
-            if (!('speechSynthesis' in window)) {
-                alert('您的浏览器不支持语音朗读功能！');
+            if (!("speechSynthesis" in window)) {
+                alert("当前浏览器不支持语音朗读");
                 return;
             }
             window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = document.getElementById('tts-voice-select').value;
-            window.speechSynthesis.speak(utterance);
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = state.accent || "en-US";
+            u.rate = 0.95;
+            window.speechSynthesis.speak(u);
         }
 
-        // 语音识别输入 (STT)
-        function startVoiceInput(targetId) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert('您的浏览器不支持语音识别功能，请使用 Chrome 浏览器或手动输入。');
+        function startSpeechToText(inputId) {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) {
+                alert("当前浏览器不支持麦克风语音识别，建议使用 Chrome 或 Edge 浏览器。");
                 return;
             }
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'en-US';
-            recognition.start();
-            recognition.onresult = function(event) {
-                const speechToText = event.results[0][0].transcript;
-                document.getElementById(targetId).value = speechToText;
+            const rec = new SR();
+            rec.lang = state.accent || "en-US";
+            rec.onresult = (e) => {
+                const txt = e.results[0][0].transcript;
+                const el = document.getElementById(inputId);
+                if (el) el.value = el.value ? (el.value + " " + txt) : txt;
             };
-            recognition.onerror = function() {
-                alert('语音识别失败，请重试或手动输入。');
-            };
+            rec.start();
         }
 
-        // 数据看板与打卡
-        function updateDataStats() {
-            document.getElementById('stat-focus-min').innerText = appData.focusMinutes;
-            document.getElementById('stat-streak-days').innerText = appData.streakDays;
-            document.getElementById('stat-total-cards').innerText = appData.cards.length;
-            document.getElementById('stat-today-new').innerText = appData.todayNew;
-            document.getElementById('stat-today-review').innerText = appData.todayReview;
-            document.getElementById('stat-total-review').innerText = appData.totalReview;
-        }
-
-        function startFocusTimer() {
-            if (focusTimerInterval) clearInterval(focusTimerInterval);
-            focusTimerInterval = setInterval(() => {
-                appData.focusMinutes += 1;
-                saveData();
-                if (document.getElementById('tab-data').classList.contains('active')) {
-                    updateDataStats();
-                }
-            }, 60000); // 每分钟 +1
-        }
-
-        function recordActivity() {
-            const todayStr = new Date().toISOString().split('T')[0];
-            appData.calendar[todayStr] = true;
-            appData.streakDays = Object.keys(appData.calendar).length;
-            initCalendar();
-        }
-
-        function initCalendar() {
-            const grid = document.getElementById('calendar-grid');
-            grid.innerHTML = '';
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const dStr = d.toISOString().split('T')[0];
-                const active = appData.calendar[dStr];
-                grid.innerHTML += `
-                    <div class="py-1 rounded-lg ${active ? 'bg-purple-600 text-white font-bold' : 'bg-slate-100 text-slate-400'}">
-                        ${d.getDate()}
-                    </div>
-                `;
-            }
-        }
-
-        // 个人中心与排行榜
-        function updateMineView() {
-            const user = appData.user;
-            if (user) {
-                document.getElementById('user-name-display').innerText = user.name;
-                document.getElementById('user-email-display').innerText = user.email;
-                document.getElementById('user-avatar-initial').innerText = user.name.charAt(0).toUpperCase();
-                document.getElementById('header-user-badge').innerText = user.name;
-            } else {
-                document.getElementById('user-name-display').innerText = "未登录用户";
-                document.getElementById('user-email-display').innerText = "点击上方登录/注册账号";
-                document.getElementById('header-user-badge').innerText = "未登录";
-            }
-
-            document.getElementById('ai-quota-num').innerText = appData.quota;
-            document.getElementById('ai-quota-bar').style.width = (appData.quota / 100 * 100) + '%';
-
-            const joinBtn = document.getElementById('join-leaderboard-btn');
-            joinBtn.innerText = appData.joinedLeaderboard ? "退出排行榜" : "加入排行榜";
-
-            const lbList = document.getElementById('leaderboard-list');
-            let listHtml = `
-                <div class="flex justify-between items-center py-1 border-b"><span class="font-medium">🥇 万伯渊</span><span class="text-slate-400">60 次 · 打卡 6 天</span></div>
-                <div class="flex justify-between items-center py-1 border-b"><span class="font-medium">🥈 小宇宙</span><span class="text-slate-400">36 次 · 打卡 5 天</span></div>
-                <div class="flex justify-between items-center py-1 border-b"><span class="font-medium">🥉 777</span><span class="text-slate-400">35 次 · 打卡 4 天</span></div>
-            `;
-            if (appData.joinedLeaderboard && user) {
-                listHtml += `<div class="flex justify-between items-center py-1 text-purple-700 font-bold"><span>⭐ ${user.name} (你)</span><span>${appData.totalReview} 次 · 打卡 ${appData.streakDays} 天</span></div>`;
-            }
-            lbList.innerHTML = listHtml;
-        }
-
-        function toggleLeaderboardJoin() {
-            if (!appData.user) {
-                alert('请先登录账号才能加入排行榜！');
-                openLoginModal();
-                return;
-            }
-            appData.joinedLeaderboard = !appData.joinedLeaderboard;
-            saveData();
-            updateMineView();
-        }
-
-        function redeemCode() {
-            const code = prompt("请输入 AI 额度兑换码 (测试可用: VIP666)：");
-            if (code === "VIP666") {
-                appData.quota = 100;
-                saveData();
-                updateUI();
-                alert('🎉 兑换成功！AI 额度已恢复至 100。');
-            } else if (code) {
-                alert('❌ 无效的兑换码！');
-            }
-        }
-
-        function logout() {
-            appData.user = null;
-            appData.joinedLeaderboard = false;
-            saveData();
-            updateUI();
-            alert('已退出登录。');
-        }
-
-        // 弹窗控制
-        function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
-        function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
-        function submitLogin() {
-            const name = document.getElementById('input-username').value.trim();
-            const email = document.getElementById('input-email').value.trim();
-            if (!name || !email) { alert('请输入完整的昵称和邮箱！'); return; }
-            appData.user = { name, email };
-            saveData();
-            closeLoginModal();
-            updateUI();
-            alert('🎉 登录成功！');
-        }
-
-        function openCardManager() {
-            document.getElementById('card-manager-modal').classList.remove('hidden');
-            document.getElementById('manager-card-count').innerText = appData.cards.length;
-            const list = document.getElementById('manager-card-list');
-            if (appData.cards.length === 0) {
-                list.innerHTML = '<div class="text-slate-400 text-center py-4">暂无卡片</div>';
-                return;
-            }
-            list.innerHTML = appData.cards.map(c => `
-                <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border">
-                    <div><div class="font-medium">${c.cn}</div><div class="text-purple-600 text-[11px]">${c.en}</div></div>
-                    <button onclick="deleteCard(${c.id}); openCardManager();" class="text-rose-500 font-bold px-2">删除</button>
-                </div>
-            `).join('');
-        }
-        function closeCardManager() { document.getElementById('card-manager-modal').classList.add('hidden'); }
-
-        // 站长专属后台触发 (连续点击左上角 Logo 5次 或 按 Ctrl+Shift+A)
-        let logoClickCount = 0;
-        document.getElementById('logo-trigger').addEventListener('click', () => {
-            logoClickCount++;
-            setTimeout(() => { logoClickCount = 0; }, 2000);
-            if (logoClickCount >= 5) {
+        // ================= 10. 站长隐藏后台（连击左上角 5 次或 Ctrl+Shift+A） =================
+        let adminClicks = 0;
+        document.getElementById("admin-trigger").addEventListener("click", () => {
+            adminClicks++;
+            setTimeout(() => { adminClicks = 0; }, 1800);
+            if (adminClicks >= 5) {
+                adminClicks = 0;
                 openAdminModal();
-                logoClickCount = 0;
             }
         });
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === 'A') {
+        document.addEventListener("keydown", (e) => {
+            if (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === "A") {
                 e.preventDefault();
                 openAdminModal();
             }
         });
 
         function openAdminModal() {
-            document.getElementById('admin-api-url').value = appData.adminConfig.baseUrl;
-            document.getElementById('admin-api-key').value = appData.adminConfig.apiKey;
-            document.getElementById('admin-api-model').value = appData.adminConfig.model;
-            document.getElementById('admin-modal').classList.remove('hidden');
+            document.getElementById("adm-url").value = state.admin.apiUrl || "";
+            document.getElementById("adm-key").value = state.admin.apiKey || "";
+            document.getElementById("adm-model").value = state.admin.apiModel || "deepseek-chat";
+            document.getElementById("adm-sb-url").value = state.admin.supabaseUrl || "";
+            document.getElementById("adm-sb-key").value = state.admin.supabaseKey || "";
+            document.getElementById("adm-test-status").innerText = "";
+            const m = document.getElementById("modal-admin");
+            m.classList.remove("hidden");
+            m.classList.add("flex");
         }
-        function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
-        function saveAdminConfig() {
-            appData.adminConfig.baseUrl = document.getElementById('admin-api-url').value.trim();
-            appData.adminConfig.apiKey = document.getElementById('admin-api-key').value.trim();
-            appData.adminConfig.model = document.getElementById('admin-api-model').value.trim();
-            saveData();
+        function closeAdminModal() {
+            const m = document.getElementById("modal-admin");
+            m.classList.add("hidden");
+            m.classList.remove("flex");
+        }
+        function saveAdminSettings() {
+            state.admin.apiUrl = document.getElementById("adm-url").value.trim();
+            state.admin.apiKey = document.getElementById("adm-key").value.trim();
+            state.admin.apiModel = document.getElementById("adm-model").value.trim() || "deepseek-chat";
+            state.admin.supabaseUrl = document.getElementById("adm-sb-url").value.trim();
+            state.admin.supabaseKey = document.getElementById("adm-sb-key").value.trim();
+            saveState();
             closeAdminModal();
-            alert('🛡️ 站长 API 配置保存成功！');
+            refreshAllViews();
+            alert("✅ 站长后台配置已保存！");
         }
 
-        function updateUI() {
-            updateDataStats();
-            updateMineView();
+        async function testAIConnection() {
+            const statusEl = document.getElementById("adm-test-status");
+            statusEl.className = "text-[12px] text-[#5856D6] font-medium";
+            statusEl.innerText = "⏳ 正在测试 AI 通道连接...";
+            // 临时读取输入框的值测试
+            state.admin.apiUrl = document.getElementById("adm-url").value.trim();
+            state.admin.apiKey = document.getElementById("adm-key").value.trim();
+            state.admin.apiModel = document.getElementById("adm-model").value.trim() || "deepseek-chat";
+            try {
+                const reply = await callLLM([{ role: "user", content: "Reply with: OK" }], false);
+                statusEl.className = "text-[12px] text-emerald-600 font-semibold";
+                statusEl.innerText = `✅ AI 连接成功！返回内容：${reply.substring(0, 30)}`;
+            } catch (err) {
+                statusEl.className = "text-[12px] text-rose-600 font-semibold";
+                statusEl.innerText = `❌ 连接失败：${err.message}`;
+            }
         }
+
+        // ================= 11. 全局导航与工具函数 =================
+        function switchTab(tab) {
+            ["home", "review", "data", "mine"].forEach(t => {
+                document.getElementById("view-" + t).classList.toggle("active", t === tab);
+                const navBtn = document.getElementById("nav-" + t);
+                if (t === tab) {
+                    navBtn.classList.remove("text-[#86868B]");
+                    navBtn.classList.add("text-[#5856D6]");
+                } else {
+                    navBtn.classList.remove("text-[#5856D6]");
+                    navBtn.classList.add("text-[#86868B]");
+                }
+            });
+            refreshAllViews();
+        }
+
+        function refreshAllViews() {
+            document.getElementById("accent-label").innerText = state.accent === "en-US" ? "🇺🇸 美式发音" : "🇬🇧 英式发音";
+            renderReviewSection();
+            renderDataSection();
+            renderMineSection();
+        }
+
+        function escapeHtml(str) {
+            return String(str || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            refreshAllViews();
+        });
     </script>
 </body>
 </html>
